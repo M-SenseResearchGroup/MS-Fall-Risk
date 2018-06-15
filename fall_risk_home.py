@@ -7,8 +7,14 @@ Python 3.6 on Windows 10 x64
 """
 
 from os import walk, sep
-from numpy import genfromtxt, append, where
+from numpy import genfromtxt, append, where, unique, array
 import pickle
+import matplotlib.pyplot as pl
+import matplotlib.collections as mc
+import matplotlib.patches as mp
+from time import localtime
+
+pl.close('all')
 
 
 def import_data(base_loc):
@@ -35,19 +41,18 @@ def import_data(base_loc):
 
     for subj in subjs.keys():
         # import activity classification data
-        t0, d0, a0, i0, s0, wd0, ws0 = genfromtxt(subjs[subj][0], skip_header=1, unpack=True, delimiter=',',
-                                                  dtype='str')
+        t0, a0, i0, s0, wd0, ws0 = genfromtxt(subjs[subj][0], skip_header=1, unpack=True, delimiter=',', dtype='str',
+                                              usecols=(0,2,3,4,5,6))
         try:  # if the sensor didn't record for a long time, (ie S0003) need this check
-            t1, d1, a1, i1, s1, wd1, ws1 = genfromtxt(subjs[subj][1], skip_header=1, unpack=True, delimiter=',',
-                                                      dtype='str')
+            t1, a1, i1, s1, wd1, ws1 = genfromtxt(subjs[subj][1], skip_header=1, unpack=True, delimiter=',', dtype='str'
+                                                  , usecols=(0,2,3,4,5,6))
         except ValueError:  # if the sensors didn't record the whole time, append empty lists
-            t1, d1, a1, i1, s1, wd1, ws1 = [], [], [], [], [], [], []
+            t1, a1, i1, s1, wd1, ws1 = [], [], [], [], [], []
 
         data[subj] = dict()
 
         # accumulate data
         data[subj]['time'] = append(t0, t1)
-        data[subj]['date'] = append(d0, d1)
         data[subj]['activity'] = append(a0, a1)
         data[subj]['intensity'] = append(i0, i1)
         data[subj]['walking distance'] = append(wd0, wd1)
@@ -61,17 +66,17 @@ def import_data(base_loc):
             data[subj][key] = data[subj][key][wearing]
 
         # convert numerical data to floats
-        for key in ['intensity', 'walking distance', 'walking speed']:
+        for key in ['time', 'intensity', 'walking distance', 'walking speed']:
             data[subj][key] = data[subj][key].astype('float')
 
     return data
 
-
+# importing data
 base = "C:\\Users\\Lukas Adamowicz\\Documents\\School\\Masters\\Project - MS Fall Study\\Data\\MS Fall At Home Analytics"
 
 try:  # data is serialized later for faster importing.  check if the file exists
     data_file = open(base + sep + 'data.pickle', 'rb')
-    pickle.load(data_file)
+    data = pickle.load(data_file)
     data_file.close()
 # if the file doesn't exist
 except FileNotFoundError:
@@ -81,3 +86,52 @@ except FileNotFoundError:
     fid = open(base + sep + 'data.pickle', 'wb')
     pickle.dump(data, fid)
     fid.close()
+
+# data plotting
+
+clrs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b','#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+        '#00ff04']
+activities = ['MOVING:LYING_MOVING', 'MOVING:STANDING_MOVING:OTHER', 'MOVING:STANDING_MOVING:WALKING', 'None',
+              'RESTING:LYING', 'RESTING:SITTING', 'RESTING:STANDING', 'SLEEPING:ASLEEP', 'SLEEPING:AWAKE',
+              'STAIR_ASCENT', 'STAIR_DESCENT']
+
+plots = dict()
+for subj in data.keys():
+    plots[subj] = dict()
+    plots[subj]['f'], plots[subj]['ax'] = pl.subplots(figsize=(12,2))
+
+    colors = []
+    for act in data[subj]['activity']:
+
+
+    segments = []
+    for x1, x2 in zip(data[subj]['time'], data[subj]['time'][1:]):
+        segments.append([(x1, 1), (x2, 1)])
+
+    lc = mc.LineCollection(segments, colors=colors, linewidths=45)
+
+    plots[subj]['ax'].add_collection(lc)
+    plots[subj]['ax'].set_xlim(data[subj]['time'][0], data[subj]['time'][-1])
+    plots[subj]['ax'].set_ylim(0.75, 1.25)
+
+    xtls = []  # x-tick labels
+    xts = []  # x-tick locations
+
+    for t in data[subj]['time']:
+        time = localtime(t/1000)
+        if time[3] % 2 == 1 and time[4] == 0:
+            xts.append(t)
+            xtls.append(f"{time[3]}:00")
+
+    plots[subj]['ax'].set_xticks(xts)
+    plots[subj]['ax'].set_xticklabels(xtls)
+
+    patch = []
+    for clr, act in zip(clrs, acts):
+        patch.append(mp.Patch(color=clr, label=act))
+
+    plots[subj]['ax'].legend(handles=patch)
+
+
+
+
