@@ -93,16 +93,16 @@ activities = ['MOVING:LYING_MOVING', 'MOVING:STANDING_MOVING:OTHER', 'MOVING:STA
               'RESTING:SITTING', 'RESTING:STANDING', 'SLEEPING:ASLEEP', 'SLEEPING:AWAKE', 'STAIR_ASCENT',
               'STAIR_DESCENT', 'None']
 
-mov_patch = [mp.Patch(color=clrs[0], label=activities[0].split(':')[-1]),
-             mp.Patch(color=clrs[1], label=activities[1].split(':')[-1]),
-             mp.Patch(color=clrs[2], label=activities[2].split(':')[-1])]
-rest_patch = [mp.Patch(color=clrs[3], label=activities[3].split(':')[-1]),
-              mp.Patch(color=clrs[4], label=activities[4].split(':')[-1]),
-              mp.Patch(color=clrs[5], label=activities[5].split(':')[-1])]
-sleep_patch = [mp.Patch(color=clrs[6], label=activities[6].split(':')[-1]),
-               mp.Patch(color=clrs[7], label=activities[7].split(':')[-1])]
-stair_patch = [mp.Patch(color=clrs[8], label=activities[8].split(':')[-1]),
-               mp.Patch(color=clrs[9], label=activities[9].split(':')[-1])]
+mov_patch = [mp.Patch(color=clrs[0], label=activities[0].split(':')[-1].capitalize()),
+             mp.Patch(color=clrs[1], label=activities[1].split(':')[-1].capitalize()),
+             mp.Patch(color=clrs[2], label=activities[2].split(':')[-1].capitalize())]
+rest_patch = [mp.Patch(color=clrs[3], label=activities[3].split(':')[-1].capitalize()),
+              mp.Patch(color=clrs[4], label=activities[4].split(':')[-1].capitalize()),
+              mp.Patch(color=clrs[5], label=activities[5].split(':')[-1].capitalize())]
+sleep_patch = [mp.Patch(color=clrs[6], label=activities[6].split(':')[-1].capitalize()),
+               mp.Patch(color=clrs[7], label=activities[7].split(':')[-1].capitalize())]
+stair_patch = [mp.Patch(color=clrs[8], label=activities[8].split(':')[-1].capitalize()),
+               mp.Patch(color=clrs[9], label=activities[9].split(':')[-1].capitalize())]
 
 plots = dict()
 for subj in data.keys():
@@ -122,6 +122,7 @@ for subj in data.keys():
     plots[subj]['ax'].add_collection(lc)
     plots[subj]['ax'].set_xlim(data[subj]['time'][0], data[subj]['time'][-1])
     plots[subj]['ax'].set_ylim(0.75, 1.25)
+    plots[subj]['ax'].autoscale(axis='y', tight=True)
 
     xtls = []  # x-tick labels
     xts = []  # x-tick locations
@@ -138,12 +139,20 @@ for subj in data.keys():
 
     plots[subj]['ax'].add_artist(pl.legend(handles=mov_patch, bbox_to_anchor=(0., 1.02, .25, .102), loc=3,
                                            mode='expand', title='Moving'))
-    plots[subj]['ax'].add_artist(pl.legend(handles=rest_patch, bbox_to_anchor=(.25, 1.02, .5, .102), loc=3,
+    plots[subj]['ax'].add_artist(pl.legend(handles=rest_patch, bbox_to_anchor=(.25, 1.02, .25, .102), loc=3,
                                            mode='expand', title='Resting'))
-    plots[subj]['ax'].add_artist(pl.legend(handles=sleep_patch, bbox_to_anchor=(0.5, 1.02, .75, .102), loc=3,
+    plots[subj]['ax'].add_artist(pl.legend(handles=sleep_patch, bbox_to_anchor=(0.5, 1.02, .25, .102), loc=3,
                                            mode='expand', title='Sleeping'))
-    plots[subj]['ax'].add_artist(pl.legend(handles=stair_patch, bbox_to_anchor=(0.75, 1.02, 1., .102), loc=3,
+    plots[subj]['ax'].add_artist(pl.legend(handles=stair_patch, bbox_to_anchor=(0.75, 1.02, .25, .102), loc=3,
                                            mode='expand', title='Stairs'))
+
+    plots[subj]['ax'].spines['top'].set_visible(False)
+    plots[subj]['ax'].spines['right'].set_visible(False)
+    plots[subj]['ax'].spines['left'].set_visible(False)
+    plots[subj]['ax'].spines['bottom'].set_visible(False)
+    plots[subj]['ax'].axes.get_yaxis().set_visible(False)
+
+    plots[subj]['ax'].set_title(subj)
 
     plots[subj]['f'].tight_layout()
 
