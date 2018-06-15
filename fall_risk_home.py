@@ -107,8 +107,11 @@ stair_patch = [mp.Patch(color=clrs[8], label=activities[8].split(':')[-1].capita
 plots = dict()
 for subj in data.keys():
     plots[subj] = dict()
-    plots[subj]['f'], plots[subj]['ax'] = pl.subplots(figsize=(12,2))
+    plots[subj]['f'], plots[subj]['ax'] = pl.subplots(2, figsize=(12,4), sharex=True)
 
+    # ******************************************************************************************************************
+    # Plotting activity classifications
+    # ******************************************************************************************************************
     colors = []
     for act in data[subj]['activity']:
         colors.append(clrs[where(act == array(activities))[0][0]])
@@ -119,10 +122,10 @@ for subj in data.keys():
 
     lc = mc.LineCollection(segments, colors=colors, linewidths=45)
 
-    plots[subj]['ax'].add_collection(lc)
-    plots[subj]['ax'].set_xlim(data[subj]['time'][0], data[subj]['time'][-1])
-    plots[subj]['ax'].set_ylim(0.75, 1.25)
-    plots[subj]['ax'].autoscale(axis='y', tight=True)
+    plots[subj]['ax'][-1].add_collection(lc)
+    plots[subj]['ax'][-1].set_xlim(data[subj]['time'][0], data[subj]['time'][-1])
+    plots[subj]['ax'][-1].set_ylim(0.75, 1.25)
+    plots[subj]['ax'][-1].autoscale(axis='y', tight=True)
 
     xtls = []  # x-tick labels
     xts = []  # x-tick locations
@@ -133,28 +136,42 @@ for subj in data.keys():
             xts.append(t)
             xtls.append(f"{time[3]}:00")
 
-    plots[subj]['ax'].set_xticks(xts)
-    plots[subj]['ax'].set_xticklabels(xtls)
-    plots[subj]['ax'].set_xlabel('Time of Day')
+    plots[subj]['ax'][-1].set_xticks(xts)
+    plots[subj]['ax'][-1].set_xticklabels(xtls)
+    plots[subj]['ax'][-1].set_xlabel('Time of Day')
 
-    plots[subj]['ax'].add_artist(pl.legend(handles=mov_patch, bbox_to_anchor=(0., 1.02, .25, .102), loc=3,
-                                           mode='expand', title='Moving'))
-    plots[subj]['ax'].add_artist(pl.legend(handles=rest_patch, bbox_to_anchor=(.25, 1.02, .25, .102), loc=3,
-                                           mode='expand', title='Resting'))
-    plots[subj]['ax'].add_artist(pl.legend(handles=sleep_patch, bbox_to_anchor=(0.5, 1.02, .25, .102), loc=3,
-                                           mode='expand', title='Sleeping'))
-    plots[subj]['ax'].add_artist(pl.legend(handles=stair_patch, bbox_to_anchor=(0.75, 1.02, .25, .102), loc=3,
-                                           mode='expand', title='Stairs'))
+    plots[subj]['ax'][-1].add_artist(pl.legend(handles=mov_patch, bbox_to_anchor=(0., -.5, .25, .102), loc=2,
+                                               mode='expand', title='Moving'))
+    plots[subj]['ax'][-1].add_artist(pl.legend(handles=rest_patch, bbox_to_anchor=(.25, -.5, .25, .102), loc=2,
+                                               mode='expand', title='Resting'))
+    plots[subj]['ax'][-1].add_artist(pl.legend(handles=sleep_patch, bbox_to_anchor=(.5, -.5, .25, .102), loc=2,
+                                               mode='expand', title='Sleeping'))
+    plots[subj]['ax'][-1].add_artist(pl.legend(handles=stair_patch, bbox_to_anchor=(.75, -.5, .25, .102), loc=2,
+                                               mode='expand', title='Stairs'))
 
-    plots[subj]['ax'].spines['top'].set_visible(False)
-    plots[subj]['ax'].spines['right'].set_visible(False)
-    plots[subj]['ax'].spines['left'].set_visible(False)
-    plots[subj]['ax'].spines['bottom'].set_visible(False)
-    plots[subj]['ax'].axes.get_yaxis().set_visible(False)
+    plots[subj]['ax'][-1].spines['top'].set_visible(False)
+    plots[subj]['ax'][-1].spines['right'].set_visible(False)
+    plots[subj]['ax'][-1].spines['left'].set_visible(False)
+    plots[subj]['ax'][-1].spines['bottom'].set_visible(False)
+    plots[subj]['ax'][-1].axes.get_yaxis().set_visible(False)
 
-    plots[subj]['ax'].set_title(subj)
+    # ******************************************************************************************************************
+    # Plotting activity intensity
+    # ******************************************************************************************************************
+
+    plots[subj]['ax'][-2].fill_between(data[subj]['time'], data[subj]['intensity'])
+    plots[subj]['ax'][-2].set_ylim(ymin=0)
+    plots[subj]['ax'][-2].set_title('Intensity')
+
+    plots[subj]['ax'][-2].tick_params(axis='x',length=0)
+
+    # ******************************************************************************************************************
+    # Figure modifications
+    # ******************************************************************************************************************
 
     plots[subj]['f'].tight_layout()
+    plots[subj]['f'].subplots_adjust(hspace=0)
+    plots[subj]['f'].suptitle(subj)
 
 
 
