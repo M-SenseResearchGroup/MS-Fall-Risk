@@ -243,9 +243,27 @@ for subj in data.keys():
 
     plots[subj]['ax'][0].set_title('Fatigue')
 
+    fofx, fofy = text_message_xy(sms[subj]['fof']['time'], sms[subj]['fof']['ans'])
+    plots[subj]['ax'][1].plot(array(fofx) * 1000, fofy, 'o-')
+
+    plots[subj]['ax'][1].set_title('Fear of Falling')
+
+    cstx, csty = text_message_xy(sms[subj]['cst']['time'], sms[subj]['cst']['ans'])
+    plots[subj]['ax'][2].plot(array(cstx) * 1000, csty, 'o-')
+
+    plots[subj]['ax'][2].set_title('Chair Stand Test')
+
+    fallx, fally_old = text_message_xy(sms[subj]['cst']['time'], sms[subj]['cst']['ans'])
+    fally = [1 if x == 'y' else 0 for x in fally_old]
+    plots[subj]['ax'][3].plot(array(fallx) * 1000, fally, 'o-')
+
+    plots[subj]['ax'][3].set_title('Fall?')
+    plots[subj]['ax'][3].set_yticks([0, 1])
+    plots[subj]['ax'][3].set_yticklabels(['No', 'Yes'])
+
     # ******************************************************************************************************************
     # Figure modifications
     # ******************************************************************************************************************
 
     plots[subj]['f'].tight_layout()
-    plots[subj]['f'].suptitle(subj)
+    plots[subj]['f'].suptitle(subj, x=.25, y=.99)
