@@ -12,7 +12,7 @@ import pickle
 import matplotlib.pyplot as pl
 import matplotlib.collections as mc
 import matplotlib.patches as mp
-from time import localtime
+from time import localtime, mktime
 
 
 def import_mc10_analytics_data(base_loc):
@@ -102,6 +102,24 @@ def import_sms_data(file):
 
     return sdata
 
+
+def text_message_xy(times, ans):
+    x = []
+    y = []
+    for ti, a in zip(times, ans):
+        if a != '888' and a != '999':
+            y.append(a)
+
+            p1, p2 = ti.split(' ')[0], ti.split(' ')[1]
+            mo, da, yr = p1.split('/')
+            hr, mi = p2.split(':')
+
+            stime = (int(yr), int(mo), int(da), int(hr), int(mi), 0, 0, 0, -1)
+
+            x.append(mktime(stime))
+
+    return x, y
+
 # ******************************************************************************************************************
 # Importing Data
 # ******************************************************************************************************************
@@ -138,88 +156,96 @@ except FileNotFoundError:
 # Data Plotting
 # ******************************************************************************************************************
 
-# clrs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b','#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
-#         '#ffffff']
-# activities = ['MOVING:LYING_MOVING', 'MOVING:STANDING_MOVING:OTHER', 'MOVING:STANDING_MOVING:WALKING', 'RESTING:LYING',
-#               'RESTING:SITTING', 'RESTING:STANDING', 'SLEEPING:ASLEEP', 'SLEEPING:AWAKE', 'STAIR_ASCENT',
-#               'STAIR_DESCENT', 'None']
-#
-# mov_patch = [mp.Patch(color=clrs[0], label=activities[0].split(':')[-1].capitalize()),
-#              mp.Patch(color=clrs[1], label=activities[1].split(':')[-1].capitalize()),
-#              mp.Patch(color=clrs[2], label=activities[2].split(':')[-1].capitalize())]
-# rest_patch = [mp.Patch(color=clrs[3], label=activities[3].split(':')[-1].capitalize()),
-#               mp.Patch(color=clrs[4], label=activities[4].split(':')[-1].capitalize()),
-#               mp.Patch(color=clrs[5], label=activities[5].split(':')[-1].capitalize())]
-# sleep_patch = [mp.Patch(color=clrs[6], label=activities[6].split(':')[-1].capitalize()),
-#                mp.Patch(color=clrs[7], label=activities[7].split(':')[-1].capitalize())]
-# stair_patch = [mp.Patch(color=clrs[8], label=activities[8].split(':')[-1].capitalize()),
-#                mp.Patch(color=clrs[9], label=activities[9].split(':')[-1].capitalize())]
-#
-# plots = dict()
-# for subj in data.keys():
-#     plots[subj] = dict()
-#     plots[subj]['f'], plots[subj]['ax'] = pl.subplots(2, figsize=(12,4), sharex=True)
-#
-#     # ******************************************************************************************************************
-#     # Plotting activity classifications
-#     # ******************************************************************************************************************
-#     colors = []
-#     for act in data[subj]['activity']:
-#         colors.append(clrs[where(act == array(activities))[0][0]])
-#
-#     segments = []
-#     for x1, x2 in zip(data[subj]['time'], data[subj]['time'][1:]):
-#         segments.append([(x1, 1), (x2, 1)])
-#
-#     lc = mc.LineCollection(segments, colors=colors, linewidths=45)
-#
-#     plots[subj]['ax'][-1].add_collection(lc)
-#     plots[subj]['ax'][-1].set_xlim(data[subj]['time'][0], data[subj]['time'][-1])
-#     plots[subj]['ax'][-1].set_ylim(0.75, 1.25)
-#     plots[subj]['ax'][-1].autoscale(axis='y', tight=True)
-#
-#     xtls = []  # x-tick labels
-#     xts = []  # x-tick locations
-#
-#     for t in data[subj]['time']:
-#         time = localtime(t/1000)
-#         if time[3] % 2 == 1 and time[4] == 0:
-#             xts.append(t)
-#             xtls.append(f"{time[3]}:00")
-#
-#     plots[subj]['ax'][-1].set_xticks(xts)
-#     plots[subj]['ax'][-1].set_xticklabels(xtls)
-#     plots[subj]['ax'][-1].set_xlabel('Time of Day')
-#
-#     plots[subj]['ax'][-1].add_artist(pl.legend(handles=mov_patch, bbox_to_anchor=(0., -.5, .25, .102), loc=2,
-#                                                mode='expand', title='Moving'))
-#     plots[subj]['ax'][-1].add_artist(pl.legend(handles=rest_patch, bbox_to_anchor=(.25, -.5, .25, .102), loc=2,
-#                                                mode='expand', title='Resting'))
-#     plots[subj]['ax'][-1].add_artist(pl.legend(handles=sleep_patch, bbox_to_anchor=(.5, -.5, .25, .102), loc=2,
-#                                                mode='expand', title='Sleeping'))
-#     plots[subj]['ax'][-1].add_artist(pl.legend(handles=stair_patch, bbox_to_anchor=(.75, -.5, .25, .102), loc=2,
-#                                                mode='expand', title='Stairs'))
-#
-#     plots[subj]['ax'][-1].spines['top'].set_visible(False)
-#     plots[subj]['ax'][-1].spines['right'].set_visible(False)
-#     plots[subj]['ax'][-1].spines['left'].set_visible(False)
-#     plots[subj]['ax'][-1].spines['bottom'].set_visible(False)
-#     plots[subj]['ax'][-1].axes.get_yaxis().set_visible(False)
-#
-#     # ******************************************************************************************************************
-#     # Plotting activity intensity
-#     # ******************************************************************************************************************
-#
-#     plots[subj]['ax'][-2].fill_between(data[subj]['time'], data[subj]['intensity'])
-#     plots[subj]['ax'][-2].set_ylim(ymin=0)
-#     plots[subj]['ax'][-2].set_title('Intensity')
-#
-#     plots[subj]['ax'][-2].tick_params(axis='x',length=0)
-#
-#     # ******************************************************************************************************************
-#     # Figure modifications
-#     # ******************************************************************************************************************
-#
-#     plots[subj]['f'].tight_layout()
-#     plots[subj]['f'].subplots_adjust(hspace=0)
-#     plots[subj]['f'].suptitle(subj)
+clrs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b','#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+        '#ffffff']
+activities = ['MOVING:LYING_MOVING', 'MOVING:STANDING_MOVING:OTHER', 'MOVING:STANDING_MOVING:WALKING', 'RESTING:LYING',
+              'RESTING:SITTING', 'RESTING:STANDING', 'SLEEPING:ASLEEP', 'SLEEPING:AWAKE', 'STAIR_ASCENT',
+              'STAIR_DESCENT', 'None']
+
+mov_patch = [mp.Patch(color=clrs[0], label=activities[0].split(':')[-1].capitalize()),
+             mp.Patch(color=clrs[1], label=activities[1].split(':')[-1].capitalize()),
+             mp.Patch(color=clrs[2], label=activities[2].split(':')[-1].capitalize())]
+rest_patch = [mp.Patch(color=clrs[3], label=activities[3].split(':')[-1].capitalize()),
+              mp.Patch(color=clrs[4], label=activities[4].split(':')[-1].capitalize()),
+              mp.Patch(color=clrs[5], label=activities[5].split(':')[-1].capitalize())]
+sleep_patch = [mp.Patch(color=clrs[6], label=activities[6].split(':')[-1].capitalize()),
+               mp.Patch(color=clrs[7], label=activities[7].split(':')[-1].capitalize())]
+stair_patch = [mp.Patch(color=clrs[8], label=activities[8].split(':')[-1].capitalize()),
+               mp.Patch(color=clrs[9], label=activities[9].split(':')[-1].capitalize())]
+
+plots = dict()
+for subj in data.keys():
+    plots[subj] = dict()
+    plots[subj]['f'], plots[subj]['ax'] = pl.subplots(6, figsize=(12, 8), sharex=True)
+
+    # ******************************************************************************************************************
+    # Plotting activity classifications
+    # ******************************************************************************************************************
+    colors = []
+    for act in data[subj]['activity']:
+        colors.append(clrs[where(act == array(activities))[0][0]])
+
+    segments = []
+    for x1, x2 in zip(data[subj]['time'], data[subj]['time'][1:]):
+        segments.append([(x1, 1), (x2, 1)])
+
+    lc = mc.LineCollection(segments, colors=colors, linewidths=45)
+
+    plots[subj]['ax'][-1].add_collection(lc)
+    plots[subj]['ax'][-1].set_xlim(data[subj]['time'][0], data[subj]['time'][-1])
+    plots[subj]['ax'][-1].set_ylim(0.75, 1.25)
+    plots[subj]['ax'][-1].autoscale(axis='y', tight=True)
+
+    xtls = []  # x-tick labels
+    xts = []  # x-tick locations
+
+    for t in data[subj]['time']:
+        time = localtime(t/1000)
+        if time[3] % 2 == 1 and time[4] == 0:
+            xts.append(t)
+            xtls.append(f"{time[3]}:00")
+
+    plots[subj]['ax'][-1].set_xticks(xts)
+    plots[subj]['ax'][-1].set_xticklabels(xtls)
+    plots[subj]['ax'][-1].set_xlabel('Time of Day')
+
+    plots[subj]['ax'][-1].add_artist(pl.legend(handles=mov_patch, bbox_to_anchor=(0., -.5, .25, .102), loc=2,
+                                               mode='expand', title='Moving'))
+    plots[subj]['ax'][-1].add_artist(pl.legend(handles=rest_patch, bbox_to_anchor=(.25, -.5, .25, .102), loc=2,
+                                               mode='expand', title='Resting'))
+    plots[subj]['ax'][-1].add_artist(pl.legend(handles=sleep_patch, bbox_to_anchor=(.5, -.5, .25, .102), loc=2,
+                                               mode='expand', title='Sleeping'))
+    plots[subj]['ax'][-1].add_artist(pl.legend(handles=stair_patch, bbox_to_anchor=(.75, -.5, .25, .102), loc=2,
+                                               mode='expand', title='Stairs'))
+
+    plots[subj]['ax'][-1].spines['top'].set_visible(False)
+    plots[subj]['ax'][-1].spines['right'].set_visible(False)
+    plots[subj]['ax'][-1].spines['left'].set_visible(False)
+    plots[subj]['ax'][-1].spines['bottom'].set_visible(False)
+    plots[subj]['ax'][-1].axes.get_yaxis().set_visible(False)
+
+    # ******************************************************************************************************************
+    # Plotting activity intensity
+    # ******************************************************************************************************************
+
+    plots[subj]['ax'][-2].fill_between(data[subj]['time'], data[subj]['intensity'])
+    plots[subj]['ax'][-2].set_ylim(ymin=0)
+    plots[subj]['ax'][-2].set_title('Intensity')
+
+    plots[subj]['ax'][-2].tick_params(axis='x', length=0)
+
+    # ******************************************************************************************************************
+    # Plotting text message data
+    # ******************************************************************************************************************
+
+    fatx, faty = text_message_xy(sms[subj]['fat']['time'], sms[subj]['fat']['ans'])
+    plots[subj]['ax'][0].plot(array(fatx)*1000, faty, 'o-')
+
+    plots[subj]['ax'][0].set_title('Fatigue')
+
+    # ******************************************************************************************************************
+    # Figure modifications
+    # ******************************************************************************************************************
+
+    plots[subj]['f'].tight_layout()
+    plots[subj]['f'].suptitle(subj)
