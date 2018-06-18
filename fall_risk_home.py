@@ -239,14 +239,21 @@ for subj in data.keys():
     # ******************************************************************************************************************
 
     fatx, faty = text_message_xy(sms[subj]['fat']['time'], sms[subj]['fat']['ans'])
-    plots[subj]['ax'][0].plot(array(fatx)*1000, faty, 'o-')
+    plots[subj]['ax'][0].plot(array(fatx)*1000, array(faty).astype(int), 'o-')
 
-    plots[subj]['ax'][0].set_title('Fatigue')
+    plots[subj]['ax'][0].set_title('How often has fatigue prevented you completing activities?')
+    plots[subj]['ax'][0].set_ylim(.75, 5.5)
+    plots[subj]['ax'][0].set_yticks([1, 2, 3, 4, 5])
+    plots[subj]['ax'][0].set_yticklabels(['Never', 'Rarely', 'Sometimes', 'Often', 'Always'])
 
     fofx, fofy = text_message_xy(sms[subj]['fof']['time'], sms[subj]['fof']['ans'])
-    plots[subj]['ax'][1].plot(array(fofx) * 1000, fofy, 'o-')
+    plots[subj]['ax'][1].plot(array(fofx) * 1000, array(fofy).astype(int), 'o-')
 
-    plots[subj]['ax'][1].set_title('Fear of Falling')
+    plots[subj]['ax'][1].set_title('How confident that you would not fall')
+    plots[subj]['ax'][1].set_ylim(.75, 5.5)
+    plots[subj]['ax'][1].set_yticks([1, 2, 3, 4, 5])
+    plots[subj]['ax'][1].set_yticklabels(['Very Confident', 'Confident', 'Neutral', 'Not Confident',
+                                          'Very Not Confident'])
 
     cstx, csty = text_message_xy(sms[subj]['cst']['time'], sms[subj]['cst']['ans'])
     plots[subj]['ax'][2].plot(array(cstx) * 1000, csty, 'o-')
@@ -257,7 +264,7 @@ for subj in data.keys():
     fally = [1 if x == 'y' else 0 for x in fally_old]
     plots[subj]['ax'][3].plot(array(fallx) * 1000, fally, 'o-')
 
-    plots[subj]['ax'][3].set_title('Fall?')
+    plots[subj]['ax'][3].set_title('Did you fall?')
     plots[subj]['ax'][3].set_yticks([0, 1])
     plots[subj]['ax'][3].set_yticklabels(['No', 'Yes'])
 
