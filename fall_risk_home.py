@@ -256,7 +256,7 @@ for subj in data.keys():
                                           'Very Not Confident'])
 
     cstx, csty = text_message_xy(sms[subj]['cst']['time'], sms[subj]['cst']['ans'])
-    plots[subj]['ax'][2].plot(array(cstx) * 1000, csty, 'o-')
+    plots[subj]['ax'][2].plot(array(cstx) * 1000, array(csty).astype(int), 'o-')
 
     plots[subj]['ax'][2].set_title('Chair Stand Test')
 
